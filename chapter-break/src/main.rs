@@ -25,8 +25,8 @@ fn main() {
             let split_by_chapter: Vec<&str> = text.split("\n\n\n\n\n* * *\n\n\n\n\n").collect();
             let mut chapter_count = 1;
             for chapter in split_by_chapter.iter().skip(1) {
-                if chapter.len() < 20{
-                    continue
+                if chapter.len() < 20 {
+                    continue;
                 }
                 let path = format!("{}/{}.txt", path, chapter_count);
                 chapter_count += 1;
