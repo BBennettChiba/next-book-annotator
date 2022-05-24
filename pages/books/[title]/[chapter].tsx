@@ -1,19 +1,20 @@
-import React from "react";
 import fs from "fs";
-import { GetStaticProps, GetStaticPaths } from "next";
+import {
+  InferGetStaticPropsType,
+  GetStaticPropsContext,
+  GetStaticPaths,
+} from "next";
+import { ParsedUrlQuery } from "querystring";
 
-type Props = {
-  text: string;
-};
+interface Params extends ParsedUrlQuery {
+  title: string;
+  chapter: string;
+}
 
-const Chapter = ({ text }: Props) => {
-  return <div>{text}</div>;
-};
-
-/**@TODO figure out how to not have to ! this */
-export const getStaticProps: GetStaticProps = (props) => {
-  //get title of book and chapter from props and return the text in props
-  const { title, chapter } = props.params!;
+export const getStaticProps = async (
+  context: GetStaticPropsContext<Params>
+) => {
+  const { title, chapter } = context.params!;
   const text = fs.readFileSync(`./books/${title}/${chapter}.txt`, "utf8");
   return { props: { text } };
 };
@@ -35,4 +36,15 @@ export const getStaticPaths: GetStaticPaths = () => {
     fallback: "blocking",
   };
 };
+
+const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
+  return (
+    <div className="content">
+      {text.split("\n").map((paragraph, i) => (
+        <p key={i}>{paragraph}</p>
+      ))}
+    </div>
+  );
+};
+
 export default Chapter;
