@@ -5,6 +5,11 @@ import {
   GetStaticPaths,
 } from "next";
 import { ParsedUrlQuery } from "querystring";
+import React, { useEffect, useState, useRef } from "react";
+import CommentBox from "../../../components/CommentBox";
+import rangy from "rangy";
+import "rangy/lib/rangy-classapplier";
+import "rangy/lib/rangy-highlighter";
 
 interface Params extends ParsedUrlQuery {
   title: string;
@@ -38,11 +43,39 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
+  const [isCommentBoxOpen, setIsCommonBoxOpen] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const highlighter = useRef(null);
+  const ref = useRef() as React.MutableRefObject<HTMLDivElement>;
+
+  function checkHighlight(event: React.MouseEvent<HTMLDivElement>) {
+    if (ref.current && !ref.current.contains(event.target as Node)) {
+      highlighter.current.removeAllHighlights();
+      return setIsCommonBoxOpen(false);
+    }
+    if (isCommentBoxOpen && window.getSelection()?.toString() === "") {
+      return;
+    }
+
+    insert();
+    setPosition({ x: event.clientX, y: event.clientY });
+    setIsCommonBoxOpen(true);
+  }
+  React.useEffect(() => {
+    highlighter.current = rangy.createHighlighter();
+    highlighter.current.addClassApplier(rangy.createClassApplier("highlight"));
+  }, []);
+
+  function insert() {
+    highlighter.current.highlightSelection("highlight");
+  }
+
   return (
-    <div className="content">
+    <div className="content" onMouseUp={checkHighlight}>
       {text.split("\n").map((paragraph, i) => (
         <p key={i}>{paragraph}</p>
       ))}
+      {isCommentBoxOpen && <CommentBox innerRef={ref} position={position} />}
     </div>
   );
 };
