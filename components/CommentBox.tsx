@@ -4,9 +4,10 @@ import styles from "../styles/CommentBox.module.css";
 type Props = {
   position: { x: number; y: number };
   innerRef: React.MutableRefObject<HTMLDivElement>;
+  submit: (comment: string) => void;
 };
 
-export default function CommentBox({ position, innerRef }: Props) {
+export default function CommentBox({ position, innerRef, submit }: Props) {
   const [text, setText] = useState("");
 
   function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>): void {
@@ -25,7 +26,9 @@ export default function CommentBox({ position, innerRef }: Props) {
           value={text}
           onChange={handleInput}
         ></textarea>
-        <button className={styles.button}>Submit</button>
+        <button onClick={() => submit(text)} className={styles.button}>
+          Submit
+        </button>
       </div>
     </div>
   );
