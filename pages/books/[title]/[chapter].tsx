@@ -11,6 +11,7 @@ import CommentBox from "../../../components/CommentBox";
 import rangy from "rangy";
 import "rangy/lib/rangy-classapplier";
 import "rangy/lib/rangy-highlighter";
+import { json } from "node:stream/consumers";
 
 interface Params extends ParsedUrlQuery {
   title: string;
@@ -22,7 +23,13 @@ export const getStaticProps = async (
 ) => {
   const { title, chapter } = context.params!;
   const text = fs.readFileSync(`./books/${title}/${chapter}.txt`, "utf8");
-  return { props: { text } };
+  const comments = await (
+    await fetch(`http://localhost:3000/api/books/${title}/${chapter}/comment`, {
+      headers: { "Content-Type": "application/json" },
+    })
+  ).json();
+  console.log(comments);
+  return { props: { text, comments } };
 };
 
 export const getStaticPaths: GetStaticPaths = () => {
@@ -44,7 +51,6 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 /**
- *
  * @TODO,
  *  setup prisma
  *  have prisma accept saving comments and highlights
@@ -52,7 +58,11 @@ export const getStaticPaths: GetStaticPaths = () => {
  * send comments with props on initial load.
  * in useEffect check document and add highlight classes to commented area
  */
-const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
+
+const Chapter = ({
+  text,
+  comments,
+}: InferGetStaticPropsType<typeof getStaticProps>) => {
   const router = useRouter();
   const [isCommentBoxOpen, setIsCommonBoxOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -101,18 +111,18 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
   useEffect(() => {
     highlighter.current = rangy.createHighlighter();
     highlighter.current.addClassApplier(rangy.createClassApplier("highlight"));
+    console.log(comments);
   }, []);
 
   function insert() {
     highlighter.current?.highlightSelection("highlight");
   }
 
-  async function submit(comment: string) {
-    // console.log(router);
+  async function submit(content: string) {
     fetch(`/api/books/${router.query.title}/${router.query.chapter}/comment`, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...selectionData, comment }),
+      body: JSON.stringify({ ...selectionData, content }),
     })
       .then((response) => response.json())
       .then((json) => console.log(json));
