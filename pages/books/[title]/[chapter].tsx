@@ -6,12 +6,11 @@ import {
 } from "next";
 import { ParsedUrlQuery } from "querystring";
 import { useRouter } from "next/router";
-import { useEffect, useState, useRef } from "react";
+import { createElement,useEffect, useState, useRef } from "react";
 import CommentBox from "../../../components/CommentBox";
 import rangy from "rangy";
 import "rangy/lib/rangy-classapplier";
 import "rangy/lib/rangy-highlighter";
-import { json } from "node:stream/consumers";
 
 interface Params extends ParsedUrlQuery {
   title: string;
@@ -22,14 +21,18 @@ export const getStaticProps = async (
   context: GetStaticPropsContext<Params>
 ) => {
   const { title, chapter } = context.params!;
-  const text = fs.readFileSync(`./books/${title}/${chapter}.txt`, "utf8");
+  let text: {text:string, comment?:any}[] = fs.readFileSync(`./books/${title}/${chapter}.txt`, "utf8").split('\n').map(v => ({text:v}));
   const comments = await (
     await fetch(`http://localhost:3000/api/books/${title}/${chapter}/comment`, {
       headers: { "Content-Type": "application/json" },
     })
   ).json();
-  console.log(comments);
-  return { props: { text, comments } };
+  for (const comment of comments){
+    const i = comment.startIndex
+    console.log(text[i])
+    text[i] = {...text[i], comment}
+  }
+  return { props: { text } };
 };
 
 export const getStaticPaths: GetStaticPaths = () => {
@@ -52,8 +55,6 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 /**
  * @TODO,
- *  setup prisma
- *  have prisma accept saving comments and highlights
  *
  * send comments with props on initial load.
  * in useEffect check document and add highlight classes to commented area
@@ -61,7 +62,6 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 const Chapter = ({
   text,
-  comments,
 }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const router = useRouter();
   const [isCommentBoxOpen, setIsCommonBoxOpen] = useState(false);
@@ -111,7 +111,6 @@ const Chapter = ({
   useEffect(() => {
     highlighter.current = rangy.createHighlighter();
     highlighter.current.addClassApplier(rangy.createClassApplier("highlight"));
-    console.log(comments);
   }, []);
 
   function insert() {
@@ -128,11 +127,13 @@ const Chapter = ({
       .then((json) => console.log(json));
   }
 
+
+
   return (
     <div className="content" onMouseUp={checkHighlight}>
-      {text.split("\n").map((paragraph, i) => (
+      {text.map((paragraph, i) => (
         <p key={i} id={i.toString()}>
-          {paragraph}
+          {"comment" in paragraph ? <span className="highlight">{paragraph.text}</span> : paragraph.text}
         </p>
       ))}
       {isCommentBoxOpen && (
