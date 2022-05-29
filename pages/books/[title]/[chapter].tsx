@@ -1,12 +1,9 @@
 import fs from "fs";
-import {
-  InferGetStaticPropsType,
-  GetStaticPropsContext,
-  GetStaticPaths,
-} from "next";
+import { InferGetStaticPropsType, GetStaticPropsContext, GetStaticPaths } from "next";
+import Head from "next/head";
 import { ParsedUrlQuery } from "querystring";
 import { useRouter } from "next/router";
-import { createElement,useEffect, useState, useRef } from "react";
+import { createElement, useEffect, useState, useRef } from "react";
 import CommentBox from "../../../components/CommentBox";
 import rangy from "rangy";
 import "rangy/lib/rangy-classapplier";
@@ -17,20 +14,20 @@ interface Params extends ParsedUrlQuery {
   chapter: string;
 }
 
-export const getStaticProps = async (
-  context: GetStaticPropsContext<Params>
-) => {
+export const getStaticProps = async (context: GetStaticPropsContext<Params>) => {
   const { title, chapter } = context.params!;
-  let text: {text:string, comment?:any}[] = fs.readFileSync(`./books/${title}/${chapter}.txt`, "utf8").split('\n').map(v => ({text:v}));
+  let text: { text: string; comment?: any }[] = fs
+    .readFileSync(`./books/${title}/${chapter}.txt`, "utf8")
+    .split("\n")
+    .map((v) => ({ text: v }));
   const comments = await (
     await fetch(`http://localhost:3000/api/books/${title}/${chapter}/comment`, {
       headers: { "Content-Type": "application/json" },
     })
   ).json();
-  for (const comment of comments){
-    const i = comment.startIndex
-    console.log(text[i])
-    text[i] = {...text[i], comment}
+  for (const comment of comments) {
+    const i = comment.startIndex;
+    text[i] = { ...text[i], comment };
   }
   return { props: { text } };
 };
@@ -60,9 +57,7 @@ export const getStaticPaths: GetStaticPaths = () => {
  * in useEffect check document and add highlight classes to commented area
  */
 
-const Chapter = ({
-  text,
-}: InferGetStaticPropsType<typeof getStaticProps>) => {
+const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const router = useRouter();
   const [isCommentBoxOpen, setIsCommonBoxOpen] = useState(false);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -92,9 +87,7 @@ const Chapter = ({
   function createSelection() {
     const range = window.getSelection();
     if (!range) return;
-    const startIndex = Number(
-      range.anchorNode?.parentElement?.getAttribute("id")
-    );
+    const startIndex = Number(range.anchorNode?.parentElement?.getAttribute("id"));
     if (!startIndex) return;
     const endIndex = Number(range.focusNode?.parentElement?.getAttribute("id"));
     if (!endIndex) return;
@@ -127,19 +120,54 @@ const Chapter = ({
       .then((json) => console.log(json));
   }
 
+  function addHighlight(paragraph: typeof text[number]) {
+    const commendExtendsParagraph = paragraph.comment.startIndex !== paragraph.comment.endIndex;
+    const start = paragraph.comment.startOffset;
+    const end = !commendExtendsParagraph ? paragraph.comment.endOffset : paragraph.text.length - 1;
+    const [splitTextA, splitTextB, splitTextC] = [
+      paragraph.text.slice(0, start),
+      paragraph.text.slice(start, end),
+      paragraph.text.slice(end),
+    ];
+    return (
+      <>
+        {splitTextA}
+        <span className="highlight">{splitTextB}</span>
+        {!commendExtendsParagraph && splitTextC}
+      </>
+    );
+  }
 
+  /**
+   * @TODO output tabs correctly
+   */
+
+  function addText(textToParse: typeof text) {
+    const output = [];
+    for (let i = 0; i < textToParse.length; i++) {
+      const paragraph = textToParse[i];
+      const paragraphHasComment = "comment" in paragraph;
+
+      output.push(
+        <p key={i} id={i.toString()}>
+          {paragraphHasComment ?  addHighlight(paragraph) : paragraph.text}
+        </p>
+      );
+    }
+    return output;
+  }
 
   return (
-    <div className="content" onMouseUp={checkHighlight}>
-      {text.map((paragraph, i) => (
-        <p key={i} id={i.toString()}>
-          {"comment" in paragraph ? <span className="highlight">{paragraph.text}</span> : paragraph.text}
-        </p>
-      ))}
-      {isCommentBoxOpen && (
-        <CommentBox submit={submit} innerRef={ref} position={position} />
-      )}
-    </div>
+    <>
+      <Head>
+        <title>My page title</title>
+        <meta property="og:title" content="My page title" key="title" />
+      </Head>
+      <div className="content" onMouseUp={checkHighlight}>
+        {addText(text)}
+        {isCommentBoxOpen && <CommentBox submit={submit} innerRef={ref} position={position} />}
+      </div>
+    </>
   );
 };
 
