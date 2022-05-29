@@ -138,21 +138,76 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
     );
   }
 
+  function addMultipleParagaphHighlight(paragraphs: typeof text[number][], output: any[]) {
+    const firstComment = paragraphs[0].comment;
+    const startIndex = firstComment.startIndex;
+    const startOffset = firstComment.startOffset;
+    const endIndex = firstComment.endIndex;
+    const endOffset = firstComment.endOffset;
+    for (let i = 0; i < paragraphs.length; i++) {
+      const paragraph = paragraphs[i];
+      const isFirst = i === 0;
+      const isLast = i === paragraphs.length - 1;
+      const text = paragraph.text;
+      if (isFirst) {
+        const [noHighlight, highlighted] = [text.slice(0, startOffset), text.slice(startOffset)];
+        output.push(
+          <p key={startIndex} id={startIndex.toString()}>
+            {noHighlight}
+            <span className="highlight">{highlighted}</span>
+          </p>
+        );
+      } else if (isLast) {
+        const [highlight, noHighlight] = [text.slice(0, endOffset), text.slice(endOffset)];
+        output.push(
+          <p key={endIndex} id={endIndex.toString()}>
+            <span className="highlight">{highlight}</span>
+            {noHighlight}
+          </p>
+        );
+      } else {
+        output.push(
+          <p key={startIndex + i} id={(startIndex + 1).toString()}>
+            <span className="highlight">{text}</span>
+          </p>
+        );
+      }
+    }
+  }
+
   /**
    * @TODO output tabs correctly
-   */
+  */
 
   function addText(textToParse: typeof text) {
     const output = [];
     for (let i = 0; i < textToParse.length; i++) {
       const paragraph = textToParse[i];
       const paragraphHasComment = "comment" in paragraph;
-
-      output.push(
-        <p key={i} id={i.toString()}>
-          {paragraphHasComment ?  addHighlight(paragraph) : paragraph.text}
-        </p>
-      );
+      const commentInOneParagraph = paragraph?.comment?.startIndex === paragraph?.comment?.endIndex;
+      if (paragraphHasComment && commentInOneParagraph) {
+        output.push(
+          <p key={i} id={i.toString()}>
+            {addHighlight(paragraph)}
+          </p>
+        );
+      }
+      if (paragraphHasComment && !commentInOneParagraph) {
+        const numberOfParagraphs = paragraph.comment.endIndex - paragraph.comment.startIndex + 1;
+        const paragraphs = [];
+        for (let n = 0; n < numberOfParagraphs; n++) {
+          paragraphs.push(textToParse[i + n]);
+        }
+        addMultipleParagaphHighlight(paragraphs, output);
+        i += numberOfParagraphs - 1;
+      }
+      if (!paragraphHasComment) {
+        output.push(
+          <p key={i} id={i.toString()}>
+            {paragraph.text}
+          </p>
+        );
+      }
     }
     return output;
   }
