@@ -12,6 +12,7 @@ const Navbar: FC<Props> = ({ children }) => {
         <Link href="/">home</Link>
         <Link href="/books">books</Link>
         <Link href="/login">login</Link>
+        <Link href="/upload">upload</Link>
       </nav>
       {children}
     </>

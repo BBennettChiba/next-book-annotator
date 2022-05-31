@@ -50,13 +50,6 @@ export const getStaticPaths: GetStaticPaths = () => {
   };
 };
 
-/**
- * @TODO,
- *
- * send comments with props on initial load.
- * in useEffect check document and add highlight classes to commented area
- */
-
 const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const router = useRouter();
   const [isCommentBoxOpen, setIsCommonBoxOpen] = useState(false);
@@ -177,6 +170,9 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
 
   /**
    * @TODO output tabs correctly
+   * @TODO on hover change color
+   * @todo on click of highlighted area see comment and metadata
+   * @todo make submit prettier
   */
 
   function addText(textToParse: typeof text) {

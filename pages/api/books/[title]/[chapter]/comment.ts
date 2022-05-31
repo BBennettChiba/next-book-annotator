@@ -17,7 +17,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         chapter,
       },
     });
-    console.log(comments)
+    console.log(comments);
     return res.status(200).json(comments);
   }
   if (req.method !== "POST") return;
