@@ -3,12 +3,17 @@ import { InferGetStaticPropsType, GetStaticPropsContext, GetStaticPaths } from "
 import Head from "next/head";
 import { ParsedUrlQuery } from "querystring";
 import { useRouter } from "next/router";
-import { createElement, useEffect, useState, useRef } from "react";
+import {  useEffect, useState, useRef } from "react";
 import CommentBox from "../../../components/CommentBox";
 import rangy from "rangy";
 import "rangy/lib/rangy-classapplier";
 import "rangy/lib/rangy-highlighter";
 
+/**
+ * @TODO fix rangy environment error and typing error
+ * maybe modulize things to make it smaller and easier.
+ * @TODO setup dynamic rendering after created comment
+ */
 interface Params extends ParsedUrlQuery {
   title: string;
   chapter: string;

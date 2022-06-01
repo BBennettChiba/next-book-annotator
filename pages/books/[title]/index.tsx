@@ -14,7 +14,7 @@ const Title = ({ chapters }: Props) => {
         <li key={key}>
           <Link
             passHref
-            href={`${router.query.title}/${chap.replace(".txt", "")}`}
+            href={`${router.query.title}/${encodeURIComponent(chap)}`}
           >
             {chap}
           </Link>
@@ -34,7 +34,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 export const getStaticProps: GetStaticProps = (context) => {
   /**@TODO figure out how to not have to ! this */
-  const chapters = fs.readdirSync(`./books/${context.params!.title}`);
+  const chapters = fs.readdirSync(`./books/${context.params!.title}`).map((chapter) => chapter.replace(".txt", "")).sort((a,b) => Number(a) - Number(b)); ;
   return { props: { chapters } };
 };
 

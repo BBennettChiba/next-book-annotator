@@ -8,7 +8,8 @@ type Props = {
 
 const Books = ({ books }: Props) => {
   return (
-    <div>
+    <div style={{display: 'flex', flexDirection: 'column'}}>
+      <h1>books!</h1>
       {books.map((book: string, key: number) => (
         <Link key={key} href={`books/${book}`}>
           {book}
