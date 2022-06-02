@@ -38,3 +38,6 @@ footer {
 .highlight {
   background-color: yellow;
 }
+.highlight:hover {
+  background-color: green;
+}

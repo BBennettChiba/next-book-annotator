@@ -36,7 +36,6 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 export const getStaticProps: GetStaticProps = (context) => {
-  /**@TODO figure out how to not have to ! this */
   const chapters = fs.readdirSync(path.join(`./books/${context.params!.title}`)).map((chapter) => chapter.replace(".txt", "")).sort((a,b) => Number(a) - Number(b)); ;
   return { props: { chapters } };
 };

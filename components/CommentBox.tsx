@@ -15,7 +15,7 @@ export default function CommentBox({ position, innerRef, submit }: Props) {
   }
 
   return (
-    <div className={styles.body} ref={innerRef}>
+    <div ref={innerRef}>
       <div
         className={styles.container}
         style={{ top: position.y, left: position.x }}

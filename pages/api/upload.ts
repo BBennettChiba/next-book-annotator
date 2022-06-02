@@ -11,8 +11,6 @@ export const config = {
 
 /**
  * @TODO error handling, error handling, error handling 
- * @TODO ts problems
- * @TODO do dynamic rendering for new upload
  */
 
 const handler = (req: NextApiRequest, res: NextApiResponse) => {
@@ -20,8 +18,9 @@ const handler = (req: NextApiRequest, res: NextApiResponse) => {
     return res.status(400).json({ err: "Bad Request" });
   const form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
-    //@ts-ignore
-    await saveFile(files.file);
+    if (Array.isArray(files)) files = files[0];
+    await saveFile(files.file as formidable.File);
+    res.unstable_revalidate('/books');
   });
   return res.json({ name: "john doe" });
 };
