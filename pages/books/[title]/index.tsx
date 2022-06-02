@@ -1,4 +1,5 @@
 import fs from "fs";
+import path from 'path'
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { GetStaticPaths, GetStaticProps } from "next";
@@ -8,13 +9,15 @@ type Props = {
 };
 const Title = ({ chapters }: Props) => {
   const router = useRouter();
+  console.log()
+  
   return (
     <div>
       {chapters.map((chap: any, key: number) => (
         <li key={key}>
           <Link
             passHref
-            href={`${router.query.title}/${encodeURIComponent(chap)}`}
+            href={`/books/${router.query.title!}/${encodeURIComponent(chap)}`}
           >
             {chap}
           </Link>
@@ -34,7 +37,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 
 export const getStaticProps: GetStaticProps = (context) => {
   /**@TODO figure out how to not have to ! this */
-  const chapters = fs.readdirSync(`./books/${context.params!.title}`).map((chapter) => chapter.replace(".txt", "")).sort((a,b) => Number(a) - Number(b)); ;
+  const chapters = fs.readdirSync(path.join(`./books/${context.params!.title}`)).map((chapter) => chapter.replace(".txt", "")).sort((a,b) => Number(a) - Number(b)); ;
   return { props: { chapters } };
 };
 

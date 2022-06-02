@@ -17,9 +17,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         chapter,
       },
     });
-    console.log(comments);
     return res.status(200).json(comments);
   }
+
   if (req.method !== "POST") return;
   const { startIndex, endIndex, startOffset, endOffset, content } = req.body;
   const comment = await prisma.comment.create({
@@ -34,6 +34,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       user: { connect: { id: userId } },
     },
   });
+  res.unstable_revalidate(`/books/${title}/${chapter}`)
   res.status(200).json(comment);
 };
 

@@ -1,28 +1,31 @@
 import fs from "fs";
-import { InferGetStaticPropsType, GetStaticPropsContext, GetStaticPaths } from "next";
+import path from 'path';
+import {
+  InferGetStaticPropsType,
+  GetStaticPropsContext,
+  GetStaticPaths,
+} from "next";
 import Head from "next/head";
 import { ParsedUrlQuery } from "querystring";
 import { useRouter } from "next/router";
-import {  useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import CommentBox from "../../../components/CommentBox";
-import rangy from "rangy";
-import "rangy/lib/rangy-classapplier";
-import "rangy/lib/rangy-highlighter";
-
 /**
- * @TODO fix rangy environment error and typing error
  * maybe modulize things to make it smaller and easier.
  * @TODO setup dynamic rendering after created comment
  */
+
 interface Params extends ParsedUrlQuery {
   title: string;
   chapter: string;
 }
 
-export const getStaticProps = async (context: GetStaticPropsContext<Params>) => {
+export const getStaticProps = async (
+  context: GetStaticPropsContext<Params>
+) => {
   const { title, chapter } = context.params!;
   let text: { text: string; comment?: any }[] = fs
-    .readFileSync(`./books/${title}/${chapter}.txt`, "utf8")
+    .readFileSync(path.join(`./books/${title}/${chapter}.txt`), "utf8")
     .split("\n")
     .map((v) => ({ text: v }));
   const comments = await (
@@ -44,9 +47,9 @@ export const getStaticPaths: GetStaticPaths = () => {
     .map((dir) => dir.name);
   const paths: { params: { title: string; chapter: string } }[] = [];
   books.forEach((title) => {
-    const chapters = fs.readdirSync(`./books/${title}/`);
+    const chapters = fs.readdirSync(path.join(`./books/${title}/`));
     chapters.forEach((chapter) => {
-      paths.push({ params: { title, chapter } });
+      paths.push({ params: { title, chapter: chapter.replace(".txt", "") } });
     });
   });
   return {
@@ -54,6 +57,10 @@ export const getStaticPaths: GetStaticPaths = () => {
     fallback: "blocking",
   };
 };
+
+import rangy from "rangy";
+import "rangy/lib/rangy-classapplier";
+import "rangy/lib/rangy-highlighter";
 
 const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
   const router = useRouter();
@@ -85,7 +92,9 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
   function createSelection() {
     const range = window.getSelection();
     if (!range) return;
-    const startIndex = Number(range.anchorNode?.parentElement?.getAttribute("id"));
+    const startIndex = Number(
+      range.anchorNode?.parentElement?.getAttribute("id")
+    );
     if (!startIndex) return;
     const endIndex = Number(range.focusNode?.parentElement?.getAttribute("id"));
     if (!endIndex) return;
@@ -119,9 +128,12 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
   }
 
   function addHighlight(paragraph: typeof text[number]) {
-    const commendExtendsParagraph = paragraph.comment.startIndex !== paragraph.comment.endIndex;
+    const commendExtendsParagraph =
+      paragraph.comment.startIndex !== paragraph.comment.endIndex;
     const start = paragraph.comment.startOffset;
-    const end = !commendExtendsParagraph ? paragraph.comment.endOffset : paragraph.text.length - 1;
+    const end = !commendExtendsParagraph
+      ? paragraph.comment.endOffset
+      : paragraph.text.length - 1;
     const [splitTextA, splitTextB, splitTextC] = [
       paragraph.text.slice(0, start),
       paragraph.text.slice(start, end),
@@ -136,7 +148,10 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
     );
   }
 
-  function addMultipleParagaphHighlight(paragraphs: typeof text[number][], output: any[]) {
+  function addMultipleParagaphHighlight(
+    paragraphs: typeof text[number][],
+    output: any[]
+  ) {
     const firstComment = paragraphs[0].comment;
     const startIndex = firstComment.startIndex;
     const startOffset = firstComment.startOffset;
@@ -148,7 +163,10 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
       const isLast = i === paragraphs.length - 1;
       const text = paragraph.text;
       if (isFirst) {
-        const [noHighlight, highlighted] = [text.slice(0, startOffset), text.slice(startOffset)];
+        const [noHighlight, highlighted] = [
+          text.slice(0, startOffset),
+          text.slice(startOffset),
+        ];
         output.push(
           <p key={startIndex} id={startIndex.toString()}>
             {noHighlight}
@@ -156,7 +174,10 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
           </p>
         );
       } else if (isLast) {
-        const [highlight, noHighlight] = [text.slice(0, endOffset), text.slice(endOffset)];
+        const [highlight, noHighlight] = [
+          text.slice(0, endOffset),
+          text.slice(endOffset),
+        ];
         output.push(
           <p key={endIndex} id={endIndex.toString()}>
             <span className="highlight">{highlight}</span>
@@ -178,14 +199,15 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
    * @TODO on hover change color
    * @todo on click of highlighted area see comment and metadata
    * @todo make submit prettier
-  */
+   */
 
   function addText(textToParse: typeof text) {
     const output = [];
     for (let i = 0; i < textToParse.length; i++) {
       const paragraph = textToParse[i];
       const paragraphHasComment = "comment" in paragraph;
-      const commentInOneParagraph = paragraph?.comment?.startIndex === paragraph?.comment?.endIndex;
+      const commentInOneParagraph =
+        paragraph?.comment?.startIndex === paragraph?.comment?.endIndex;
       if (paragraphHasComment && commentInOneParagraph) {
         output.push(
           <p key={i} id={i.toString()}>
@@ -194,7 +216,8 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
         );
       }
       if (paragraphHasComment && !commentInOneParagraph) {
-        const numberOfParagraphs = paragraph.comment.endIndex - paragraph.comment.startIndex + 1;
+        const numberOfParagraphs =
+          paragraph.comment.endIndex - paragraph.comment.startIndex + 1;
         const paragraphs = [];
         for (let n = 0; n < numberOfParagraphs; n++) {
           paragraphs.push(textToParse[i + n]);
@@ -221,7 +244,9 @@ const Chapter = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
       </Head>
       <div className="content" onMouseUp={checkHighlight}>
         {addText(text)}
-        {isCommentBoxOpen && <CommentBox submit={submit} innerRef={ref} position={position} />}
+        {isCommentBoxOpen && (
+          <CommentBox submit={submit} innerRef={ref} position={position} />
+        )}
       </div>
     </>
   );
