@@ -112,10 +112,7 @@ const Chapter = ({ text }: Props) => {
     );
   }
 
-  function addMultipleParagaphHighlight(
-    paragraphs: [Required<Text>, Text],
-    output: any[]
-  ) {
+  function addMultipleParagaphHighlight(paragraphs: [Required<Text>, Text], output:JSX.Element[] ) {
     const firstComment = paragraphs[0].comment;
     const startIndex = firstComment.startIndex;
     const startOffset = firstComment.startOffset;
@@ -160,46 +157,46 @@ const Chapter = ({ text }: Props) => {
 
   /**
    * @TODO output tabs correctly
-   * @TODO on hover change color
+   * @TODO on hover change color entire comment
    * @todo on click of highlighted area see comment and metadata
    * @todo make submit prettier
    * @todo fix click issues
+   * @todo allow for multiple comments on one paragraph
    */
 
   function addText(textToParse: typeof text) {
     const hasComment = (paragraph: Text): paragraph is Required<Text> =>
       "comment" in paragraph;
-    const output = [];
+    const output: JSX.Element[] = [];
     for (let i = 0; i < textToParse.length; i++) {
       const paragraph = textToParse[i];
       const paragraphHasComment = hasComment(paragraph);
-      const commentInOneParagraph =
-        paragraph?.comment?.startIndex === paragraph?.comment?.endIndex;
-      if (paragraphHasComment && commentInOneParagraph) {
-        output.push(
-          <p key={i} id={i.toString()}>
-            {addHighlight(paragraph)}
-          </p>
-        );
-      }
-      if (paragraphHasComment && !commentInOneParagraph) {
-        const numberOfParagraphs =
-          paragraph.comment.endIndex - paragraph.comment.startIndex + 1;
-        const paragraphs = [];
-        for (let n = 0; n < numberOfParagraphs; n++) {
-          paragraphs.push(textToParse[i + n]);
-        }
-        /**@TODO figure this out */
-        addMultipleParagaphHighlight(paragraphs, output);
-        i += numberOfParagraphs - 1;
-      }
       if (!paragraphHasComment) {
         output.push(
           <p key={i} id={i.toString()}>
             {paragraph.text}
           </p>
         );
+        continue;
       }
+      const commentInOneParagraph =
+        paragraph.comment.startIndex === paragraph.comment.endIndex;
+      if (commentInOneParagraph) {
+        output.push(
+          <p key={i} id={i.toString()}>
+            {addHighlight(paragraph)}
+          </p>
+        );
+        continue;
+      }
+      const numberOfParagraphs =
+        paragraph.comment.endIndex - paragraph.comment.startIndex + 1;
+      const paragraphs  = textToParse.slice(
+        i,
+        i + numberOfParagraphs
+      );
+      addMultipleParagaphHighlight(paragraphs as [Required<Text>, Text], output);
+      i += numberOfParagraphs; -1;
     }
     return output;
   }
