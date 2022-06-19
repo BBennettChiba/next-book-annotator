@@ -1,7 +1,7 @@
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
-import CommentBox from "./CommentBox";
+import CommentBox from "./CommentInput";
 import rangy from "rangy";
 import "rangy/lib/rangy-classapplier";
 import "rangy/lib/rangy-highlighter";
@@ -102,11 +102,10 @@ const Chapter = ({ text }: Props) => {
       paragraph.text.slice(start, endOffset),
       paragraph.text.slice(endOffset),
     ];
-    console.log(splitTextA, splitTextB);
     return (
       <>
         {splitTextA}
-        <Highlight text={splitTextB} />
+        <Highlight text={splitTextB} comment={paragraph.comment}/>
         {splitTextC}
       </>
     );
@@ -131,7 +130,7 @@ const Chapter = ({ text }: Props) => {
         output.push(
           <p key={startIndex} id={startIndex.toString()}>
             {noHighlight}
-            <Highlight text={highlighted} />
+            <Highlight text={highlighted} comment={paragraph.comment}/>
           </p>
         );
       } else if (isLast) {
@@ -141,14 +140,14 @@ const Chapter = ({ text }: Props) => {
         ];
         output.push(
           <p key={endIndex} id={endIndex.toString()}>
-            <Highlight text={highlight} />
+            <Highlight text={highlight} comment={paragraph.comment} />
             {noHighlight}
           </p>
         );
       } else {
         output.push(
           <p key={startIndex + i} id={(startIndex + 1).toString()}>
-            <Highlight text={text} />
+            <Highlight text={text} comment={paragraph.comment}/>
           </p>
         );
       }
@@ -207,12 +206,12 @@ const Chapter = ({ text }: Props) => {
         <title>My page title</title>
         <meta property="og:title" content="My page title" key="title" />
       </Head>
-      <div className="content" onMouseUp={checkHighlight}>
+      <article className="content" onMouseUp={checkHighlight}>
         {addText(text)}
         {isCommentBoxOpen && (
           <CommentBox submit={submit} innerRef={ref} position={position} />
         )}
-      </div>
+      </article>
     </>
   );
 };

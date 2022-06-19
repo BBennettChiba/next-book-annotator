@@ -16,6 +16,9 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
         title,
         chapter,
       },
+      include: {
+        user: true,
+      },
     });
     return res.status(200).json(comments);
   }
@@ -34,7 +37,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
       user: { connect: { id: userId } },
     },
   });
-  res.unstable_revalidate(`/books/${title}/${chapter}`)
+  res.unstable_revalidate(`/books/${title}/${chapter}`);
   res.status(200).json(comment);
 };
 
