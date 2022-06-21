@@ -1,4 +1,5 @@
 import { useState } from "react";
+import zxcvbn from "zxcvbn";
 
 export default function Login() {
   const [userInfo, setUserInfo] = useState({
@@ -6,16 +7,27 @@ export default function Login() {
     password: "",
     email: "",
   });
+  const [passwordFeedback, setPasswordFeedback] =
+    useState<zxcvbn.ZXCVBNResult>();
 
-    return (
+  const checkPassword = (pass: string) => {
+    const evaluation = zxcvbn(userInfo.password);
+    console.log(evaluation);
+    setPasswordFeedback(evaluation);
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    fetch("/api/users", {
+      method: "POST",
+      body: JSON.stringify(userInfo),
+    }).then((res) => console.log(res));
+  };
+
+  return (
     <div>
-      Login!!!
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          console.log("submit");
-        }}
-      >
+      signup
+      <form onSubmit={handleSubmit}>
         <label>
           Username
           <input
@@ -35,8 +47,13 @@ export default function Login() {
             id="password"
             onChange={(e) => {
               setUserInfo({ ...userInfo, password: e.target.value });
+              checkPassword(e.target.value);
             }}
           />
+        </label>
+        <label>
+          Re-enter password
+          <input required type="password" id="password" />
         </label>
         <label>
           Email
@@ -51,6 +68,13 @@ export default function Login() {
         </label>
         <input value="submit" type="submit" />
       </form>
+      {passwordFeedback && (
+        <div>
+          <div>score {passwordFeedback.score}</div>
+          <div>warning: {passwordFeedback.feedback.warning}</div>
+          <div>suggestions: {passwordFeedback.feedback.suggestions}</div>
+        </div>
+      )}
     </div>
   );
 }
