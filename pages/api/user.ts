@@ -15,12 +15,17 @@ const newUserData = z
     email: z.string().email(),
     confirmEmail: z.string().email(),
     password: z.string().min(8),
+    confirmPassword: z.string().min(8),
     username: z.string().min(3),
   })
   .strict()
   .refine(({ email, confirmEmail }) => email === confirmEmail, {
     message: "Email and confirm email must match",
     path: ["confirmEmail"],
+  })
+  .refine(({ password, confirmPassword }) => password === confirmPassword, {
+    message: "Passwords must match",
+    path: ["password"],
   });
 
 // type NewUserSchema = z.infer<typeof newUserData>;
