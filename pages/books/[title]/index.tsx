@@ -9,7 +9,6 @@ type Props = {
 };
 const Title = ({ chapters }: Props) => {
   const router = useRouter();
-  console.log()
   
   return (
     <div>

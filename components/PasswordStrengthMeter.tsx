@@ -2,7 +2,6 @@ import styles from "../styles/PasswordStrengthMeter.module.css";
 import zxcvbn from "zxcvbn";
 export default function PasswordStrengthMeter({ password }: { password: any }) {
   const evaluation = zxcvbn(password);
-  console.log(evaluation);
   function changeProgressBar() {
     const backgroundColor = {
       0: "red",
@@ -12,7 +11,7 @@ export default function PasswordStrengthMeter({ password }: { password: any }) {
       4: "green",
     };
     return {
-      width: `${((evaluation.score + 1) * 100) / 5}%`,
+      width: password === "" ? "0" : `${((evaluation.score + 1) * 100) / 5}%`,
       backgroundColor: backgroundColor[evaluation.score],
     };
   }

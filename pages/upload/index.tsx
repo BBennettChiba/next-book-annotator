@@ -20,7 +20,6 @@ const Upload = () => {
         body,
       })
     ).json();
-    console.log(response);
   }
 
   return (
