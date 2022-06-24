@@ -1,12 +1,12 @@
 import fs from "fs";
-import path from 'path';
+import path from "path";
 import {
   InferGetStaticPropsType,
   GetStaticPropsContext,
   GetStaticPaths,
 } from "next";
 import { ParsedUrlQuery } from "querystring";
-import Chapter from '../../../components/Chapter'
+import Chapter from "../../../components/Chapter";
 /**
  * maybe modulize things to make it smaller and easier.
  */
@@ -25,7 +25,7 @@ export const getStaticProps = async (
     .split("\n")
     .map((v) => ({ text: v }));
   const comments = await (
-    await fetch(`http://localhost:3000/api/books/${title}/${chapter}/comment`, {
+    await fetch(`/api/books/${title}/${chapter}/comment`, {
       headers: { "Content-Type": "application/json" },
     })
   ).json();
@@ -55,7 +55,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 };
 
 const Index = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
-  return <Chapter text={text}/>
-}
+  return <Chapter text={text} />;
+};
 
 export default Index;

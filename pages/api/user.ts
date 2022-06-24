@@ -1,12 +1,19 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { PrismaClient, Prisma } from "@prisma/client";
+import { User, PrismaClient, Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import z from "zod";
+import jwt from "jsonwebtoken";
+import nookies from "nookies";
+
+interface JwtPayload {
+  id: User["id"];
+}
 
 type Data =
   | Awaited<ReturnType<typeof prisma.user.create>>
-  | { error: z.ZodIssue[] | string };
+  | { error: z.ZodIssue[] | string }
+  | User;
 
 const prisma = new PrismaClient();
 
@@ -34,6 +41,15 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
+  if (req.method === "GET") {
+    const { userToken } = nookies.get({ req });
+    console.log(userToken);
+    const user = await prisma.user.findFirst({
+      where: { email: "Bennett@gmail.com" },
+    });
+    if (!user) return res.status(404).json({ error: "User not found" });
+    return res.json(user);
+  }
   if (req.method !== "POST") return;
   let username, password, email;
   try {

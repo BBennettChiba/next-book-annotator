@@ -22,7 +22,6 @@ export const UserProvider: React.FunctionComponent<{
   children: React.ReactNode;
   user: User | null;
 }> = ({ children, user }) => {
-  console.log("usercontexuser", user);
   return (
     <UserContext.Provider value={useUserController(user)}>
       {children}
