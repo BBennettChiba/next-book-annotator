@@ -6,7 +6,14 @@ interface Props {
 }
 
 const Navbar: FC<Props> = ({ children }) => {
-  const { user } = useUser();
+  const { user, setUser } = useUser();
+  const handleLogout = async () => {
+    const message = await (
+      await fetch("/api/login", { method: "DELETE", credentials: "include" })
+    ).json();
+    console.log(message);
+    setUser(null);
+  };
   return (
     <>
       <nav className="mt-2 mr-auto mb-20 pt-2 flex justify-end items-end border-b-2 border-b-gray-400">
@@ -30,6 +37,11 @@ const Navbar: FC<Props> = ({ children }) => {
           <Link href="/signup">
             <a className="ml-3">signup</a>
           </Link>
+        )}
+        {user && (
+          <a className="ml-3" onClick={handleLogout}>
+            logout
+          </a>
         )}
       </nav>
       {children}

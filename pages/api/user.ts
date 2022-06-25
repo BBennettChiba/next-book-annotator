@@ -3,12 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 import { User, PrismaClient, Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import z from "zod";
-import jwt from "jsonwebtoken";
-import nookies from "nookies";
-
-interface JwtPayload {
-  id: User["id"];
-}
+import { getUserBy, getUserIdFromToken, getUserToken } from "../../utils/utils";
 
 type Data =
   | Awaited<ReturnType<typeof prisma.user.create>>
@@ -42,11 +37,14 @@ export default async function handler(
   res: NextApiResponse<Data>
 ) {
   if (req.method === "GET") {
-    const { userToken } = nookies.get({ req });
-    console.log(userToken);
-    const user = await prisma.user.findFirst({
-      where: { email: "Bennett@gmail.com" },
-    });
+    const token = getUserToken(req);
+    const id = getUserIdFromToken(token);
+    if (!id) {
+      return res
+        .status(401)
+        .json({ error: "Invalid token, please login again" });
+    }
+    const user = await getUserBy({ id });
     if (!user) return res.status(404).json({ error: "User not found" });
     return res.json(user);
   }

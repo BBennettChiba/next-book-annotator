@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useUser } from "../../hooks/customHooks";
+import Router from "next/router";
 
 export default function Login() {
   const [userInfo, setUserInfo] = useState({
@@ -6,14 +8,29 @@ export default function Login() {
     password: "",
     email: "",
   });
+  const { setUser } = useUser();
 
-    return (
+  const handleLogin = async () => {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      credentials: "include",
+      body: JSON.stringify(userInfo),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+    const user = await response.json();
+    setUser(user);
+    Router.push("/");
+  };
+
+  return (
     <div>
       Login!!!
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          console.log("submit");
+          handleLogin();
         }}
       >
         <label>
@@ -36,17 +53,6 @@ export default function Login() {
             onChange={(e) => {
               setUserInfo({ ...userInfo, password: e.target.value });
             }}
-          />
-        </label>
-        <label>
-          Email
-          <input
-            required
-            type="email"
-            id="email"
-            onChange={(e) =>
-              setUserInfo({ ...userInfo, email: e.target.value })
-            }
           />
         </label>
         <input value="submit" type="submit" />
