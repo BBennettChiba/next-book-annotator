@@ -1,6 +1,11 @@
 import { useState } from "react";
 import PasswordStrengthMeter from "../../components/PasswordStrengthMeter";
 import styles from "../../styles/Signup.module.css";
+import { useRouter } from "next/router";
+import axios, { AxiosError } from "axios";
+
+/**@TODO maybe use axios hook for all axios requests, extract out the form into component */
+
 export default function Login() {
   const [userInfo, setUserInfo] = useState({
     username: "",
@@ -10,15 +15,21 @@ export default function Login() {
     confirmEmail: "",
   });
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    fetch("/api/user", {
-      method: "POST",
-      body: JSON.stringify(userInfo),
-      headers: { "Content-Type": "application/json" },
-    })
-      .then((res) => res.json())
-      .then((res) => console.log(res));
+    try {
+      const response = await axios.post("/api/user", userInfo, {
+        headers: { "Content-Type": "application/json" },
+      });
+      router.push("/login");
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        console.log(e.response?.status);
+        /**@TODO handle errors, form errors from zod or prisma errors, let user know */
+      }
+    }
   };
 
   return (

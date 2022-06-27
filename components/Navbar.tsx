@@ -1,3 +1,4 @@
+import axios from "axios";
 import Link from "next/link";
 import { FC, ReactNode } from "react";
 import { useUser } from "../hooks/customHooks";
@@ -8,9 +9,9 @@ interface Props {
 const Navbar: FC<Props> = ({ children }) => {
   const { user, setUser } = useUser();
   const handleLogout = async () => {
-    const message = await (
-      await fetch("/api/login", { method: "DELETE", credentials: "include" })
-    ).json();
+    const message = await axios.delete("/api/login", {
+      withCredentials: true,
+    });
     console.log(message);
     setUser(null);
   };

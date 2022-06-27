@@ -1,14 +1,13 @@
 import nookies from "nookies";
 import { NextApiRequest } from "next";
-import { PrismaClient, User } from "@prisma/client";
+import { User } from "@prisma/client";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import { decode } from "punycode";
+import { prisma } from "../lib/db";
 
 interface Payload extends JwtPayload {
   id: User["id"];
 }
 
-const prisma = new PrismaClient();
 export const getUserToken = (req: NextApiRequest) => {
   const { userToken } = nookies.get({ req });
   return userToken;

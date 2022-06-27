@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useUser } from "../../hooks/customHooks";
 import Router from "next/router";
+import axios, { AxiosError } from "axios";
+import { User } from "@prisma/client";
 
 export default function Login() {
   const [userInfo, setUserInfo] = useState({
@@ -20,8 +22,18 @@ export default function Login() {
       },
     });
     const user = await response.json();
-    setUser(user);
-    Router.push("/");
+    try {
+      const user: User = await axios.post("/api/login", userInfo, {
+        headers: { "Content-Type": "application/json" },
+      });
+      setUser(user);
+      Router.push("/");
+    } catch (e) {
+      if (e instanceof AxiosError) {
+        console.log(e.response?.status);
+        /**@TODO handle errors, form errors from zod or prisma errors, let user know */
+      }
+    }
   };
 
   return (

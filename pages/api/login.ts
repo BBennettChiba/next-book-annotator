@@ -1,15 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { User, PrismaClient, Prisma } from "@prisma/client";
+import { User } from "@prisma/client";
 import * as bcrypt from "bcrypt";
-// import z from "zod";
 import jwt from "jsonwebtoken";
 import nookies from "nookies";
-import { getUserBy } from "../../utils/utils";
-
-interface JwtPayload {
-  id: User["id"];
-}
+import { getUserBy } from "../../lib/utils";
 
 interface Error {
   error: string;
@@ -19,14 +14,11 @@ interface Message {
   message: string;
 }
 
-const prisma = new PrismaClient();
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<User | Error | Message>
 ) {
   if (req.method === "DELETE") {
-    console.log(req.headers);
     nookies.destroy({ res }, "userToken", { path: "/" });
     return res.status(200).json({ message: "logged out" });
   }

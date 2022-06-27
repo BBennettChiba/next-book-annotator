@@ -1,16 +1,15 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
-import { User, PrismaClient, Prisma } from "@prisma/client";
+import { User, Prisma } from "@prisma/client";
 import * as bcrypt from "bcrypt";
 import z from "zod";
-import { getUserBy, getUserIdFromToken, getUserToken } from "../../utils/utils";
+import { getUserBy, getUserIdFromToken, getUserToken } from "../../lib/utils";
+import { prisma } from "../../lib/db";
 
 type Data =
   | Awaited<ReturnType<typeof prisma.user.create>>
   | { error: z.ZodIssue[] | string }
   | User;
-
-const prisma = new PrismaClient();
 
 const newUserData = z
   .object({
@@ -66,7 +65,6 @@ export default async function handler(
     });
     return res.json(user);
   } catch (e) {
-    console.log(e);
     if (e instanceof Prisma.PrismaClientKnownRequestError) {
       return res.status(400).json({ error: e.message });
     }

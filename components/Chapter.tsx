@@ -6,6 +6,10 @@ import rangy from "rangy";
 import "rangy/lib/rangy-classapplier";
 import "rangy/lib/rangy-highlighter";
 import Highlight from "./Highlight";
+import { server } from "../config";
+import axios from "axios";
+
+/**@TODO config axios defaults */
 
 type Props = {
   text: Text[];
@@ -80,12 +84,14 @@ const Chapter = ({ text }: Props) => {
   }
 
   async function submit(content: string) {
-    fetch(`/api/books/${router.query.title}/${router.query.chapter}/comment`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ ...selectionData, content }),
-    })
-      .then((response) => response.json())
+    axios
+      .post(
+        `${server}/api/books/${router.query.title}/${router.query.chapter}/comment`,
+        { ...selectionData, content },
+        {
+          headers: { "content-type": "application/json" },
+        }
+      )
       .then((json) => console.log(json));
     setIsCommonBoxOpen(false);
   }
@@ -105,13 +111,16 @@ const Chapter = ({ text }: Props) => {
     return (
       <>
         {splitTextA}
-        <Highlight text={splitTextB} comment={paragraph.comment}/>
+        <Highlight text={splitTextB} comment={paragraph.comment} />
         {splitTextC}
       </>
     );
   }
 
-  function addMultipleParagaphHighlight(paragraphs: [Required<Text>, Text], output:JSX.Element[] ) {
+  function addMultipleParagaphHighlight(
+    paragraphs: [Required<Text>, Text],
+    output: JSX.Element[]
+  ) {
     const firstComment = paragraphs[0].comment;
     const startIndex = firstComment.startIndex;
     const startOffset = firstComment.startOffset;
@@ -130,7 +139,7 @@ const Chapter = ({ text }: Props) => {
         output.push(
           <p key={startIndex} id={startIndex.toString()}>
             {noHighlight}
-            <Highlight text={highlighted} comment={paragraph.comment}/>
+            <Highlight text={highlighted} comment={paragraph.comment} />
           </p>
         );
       } else if (isLast) {
@@ -147,7 +156,7 @@ const Chapter = ({ text }: Props) => {
       } else {
         output.push(
           <p key={startIndex + i} id={(startIndex + 1).toString()}>
-            <Highlight text={text} comment={paragraph.comment}/>
+            <Highlight text={text} comment={paragraph.comment} />
           </p>
         );
       }
@@ -190,12 +199,13 @@ const Chapter = ({ text }: Props) => {
       }
       const numberOfParagraphs =
         paragraph.comment.endIndex - paragraph.comment.startIndex + 1;
-      const paragraphs  = textToParse.slice(
-        i,
-        i + numberOfParagraphs
+      const paragraphs = textToParse.slice(i, i + numberOfParagraphs);
+      addMultipleParagaphHighlight(
+        paragraphs as [Required<Text>, Text],
+        output
       );
-      addMultipleParagaphHighlight(paragraphs as [Required<Text>, Text], output);
-      i += numberOfParagraphs; -1;
+      i += numberOfParagraphs;
+      -1;
     }
     return output;
   }
