@@ -10,6 +10,7 @@ import Chapter from "../../../components/Chapter";
 import { server } from "../../../config";
 import axios from "axios";
 import { Comment } from "@prisma/client";
+import { getCommentsBy } from "../../../lib/utils";
 
 /**
  * maybe modulize things to make it smaller and easier.
@@ -28,14 +29,9 @@ export const getStaticProps = async (
     .readFileSync(path.join(`./books/${title}/${chapter}.txt`), "utf8")
     .split("\n")
     .map((v) => ({ text: v }));
+  /**@TODO extract this logic from the api and use that here instead of calling the api  */
   try {
-    const { data: comments } = await axios.get(
-      `${server}/api/books/${title}/${chapter}/comment`,
-      {
-        headers: { "Content-Type": "application/json" },
-      }
-    );
-
+    const comments = await getCommentsBy({ title, chapter });
     for (const comment of comments) {
       const i = comment.startIndex;
       text[i] = { ...text[i], comment };

@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getUserMiddleware } from "../../../../../lib/middleware";
 import { prisma } from "../../../../../lib/db";
+import { getCommentsBy } from "../../../../../lib/utils";
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   let { title, chapter } = req.query;
@@ -8,15 +9,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (Array.isArray(chapter)) chapter = chapter[0];
 
   if (req.method == "GET") {
-    const comments = await prisma.comment.findMany({
-      where: {
-        title,
-        chapter,
-      },
-      include: {
-        user: true,
-      },
-    });
+    const comments = await getCommentsBy({ title, chapter });
     return res.status(200).json(comments);
   }
 

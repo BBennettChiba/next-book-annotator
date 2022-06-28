@@ -1,6 +1,6 @@
 import nookies from "nookies";
 import { NextApiRequest } from "next";
-import { User } from "@prisma/client";
+import { User, Comment } from "@prisma/client";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { prisma } from "../lib/db";
 
@@ -27,5 +27,18 @@ type UniqueUserField = Partial<Pick<User, "username" | "email" | "id">>;
 export const getUserBy = async (obj: UniqueUserField) => {
   return await prisma.user.findFirst({
     where: obj,
+  });
+};
+
+type CommentFields = Partial<
+  Pick<Comment, "title" | "chapter" | "id" | "userId">
+>;
+
+export const getCommentsBy = async (obj: CommentFields) => {
+  return await prisma.comment.findMany({
+    where: obj,
+    include: {
+      user: true,
+    },
   });
 };
