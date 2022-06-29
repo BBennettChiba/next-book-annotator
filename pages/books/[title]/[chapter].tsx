@@ -7,9 +7,6 @@ import {
 } from "next";
 import { ParsedUrlQuery } from "querystring";
 import Chapter from "../../../components/Chapter";
-import { server } from "../../../config";
-import axios from "axios";
-import { Comment } from "@prisma/client";
 import { getCommentsBy } from "../../../lib/utils";
 
 /**
@@ -29,7 +26,6 @@ export const getStaticProps = async (
     .readFileSync(path.join(`./books/${title}/${chapter}.txt`), "utf8")
     .split("\n")
     .map((v) => ({ text: v }));
-  /**@TODO extract this logic from the api and use that here instead of calling the api  */
   try {
     const comments = await getCommentsBy({ title, chapter });
     for (const comment of comments) {
@@ -63,5 +59,7 @@ export const getStaticPaths: GetStaticPaths = () => {
 const Index = ({ text }: InferGetStaticPropsType<typeof getStaticProps>) => {
   return <Chapter text={text} />;
 };
+
+Index.isProtected = true;
 
 export default Index;

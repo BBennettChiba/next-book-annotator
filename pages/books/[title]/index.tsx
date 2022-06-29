@@ -39,4 +39,6 @@ export const getStaticProps: GetStaticProps = (context) => {
   return { props: { chapters } };
 };
 
+Title.isProtected = true;
+
 export default Title;

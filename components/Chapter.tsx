@@ -2,14 +2,20 @@ import Head from "next/head";
 import { useRouter } from "next/router";
 import { useEffect, useState, useRef } from "react";
 import CommentBox from "./CommentInput";
-import rangy from "rangy";
-import "rangy/lib/rangy-classapplier";
-import "rangy/lib/rangy-highlighter";
 import Highlight from "./Highlight";
-import { server } from "../config";
 import axios from "axios";
 
-/**@TODO config axios defaults */
+const rangy =
+  typeof window !== "undefined" &&
+  typeof document !== "undefined" &&
+  require("rangy");
+typeof window !== undefined &&
+  typeof document !== "undefined" &&
+  require("rangy/lib/rangy-classapplier");
+typeof window !== undefined &&
+  typeof document !== "undefined" &&
+  require("rangy/lib/rangy-highlighter");
+
 
 type Props = {
   text: Text[];
@@ -76,7 +82,7 @@ const Chapter = ({ text }: Props) => {
 
   useEffect(() => {
     highlighter.current = rangy.createHighlighter();
-    highlighter.current.addClassApplier(rangy.createClassApplier("highlight"));
+    highlighter.current!.addClassApplier(rangy.createClassApplier("highlight"));
   }, []);
 
   function insert() {
@@ -86,7 +92,7 @@ const Chapter = ({ text }: Props) => {
   async function submit(content: string) {
     axios
       .post(
-        `${server}/api/books/${router.query.title}/${router.query.chapter}/comment`,
+        `/api/books/${router.query.title}/${router.query.chapter}/comment`,
         { ...selectionData, content },
         {
           headers: { "content-type": "application/json" },
@@ -164,11 +170,8 @@ const Chapter = ({ text }: Props) => {
   }
 
   /**
-   * @TODO output tabs correctly
    * @TODO on hover change color entire comment
    * @todo on click of highlighted area see comment and metadata
-   * @todo make submit prettier
-   * @todo fix click issues
    * @todo allow for multiple comments on one paragraph
    */
 
@@ -216,7 +219,7 @@ const Chapter = ({ text }: Props) => {
         <title>My page title</title>
         <meta property="og:title" content="My page title" key="title" />
       </Head>
-      <article className="content" onMouseUp={checkHighlight}>
+      <article className="container mt-0 mx-auto" onMouseUp={checkHighlight}>
         {addText(text)}
         {isCommentBoxOpen && (
           <CommentBox submit={submit} innerRef={ref} position={position} />

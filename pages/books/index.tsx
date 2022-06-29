@@ -26,4 +26,6 @@ export const getStaticProps: GetStaticProps = () => {
   return { props: { books } };
 };
 
+Books.isProtected = true;
+
 export default Books;

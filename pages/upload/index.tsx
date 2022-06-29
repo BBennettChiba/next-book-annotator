@@ -31,4 +31,6 @@ const Upload = () => {
   );
 };
 
+Upload.isProtected = true;
+
 export default Upload;
